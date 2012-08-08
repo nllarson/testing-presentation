@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-f'?>
+<!DOCTYPE dataset SYSTEM "schema.dtd">
+<dataset>
+	<OFFSET NAME="SYSTEM" OFFSET="80"/>
+	<OFFSET NAME="SPECIAL" OFFSET="2828"/>
+</dataset>
