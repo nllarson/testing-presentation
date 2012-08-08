@@ -1,6 +1,235 @@
 <html>
-<head></head>
-<body>
-Hello
-</body>
+	<head>
+		<title>LMA Testing Approach</title>
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/main.css">
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+	</head>
+	<body>
+		<div class="reveal">
+		    <div class="slides"> 
+		        <section>
+		        	<h1>Loyalty Hybrid Project</h1>
+		        	<br/>
+		        	<h2>Testing Approach</h2>
+		        	<p>By <a href="mailto:nick.larson@objectpartners.com" class="roll">Nick Larson</a></p>
+		        </section>
+
+		        <section>
+		        	<h2>About Me</h2>
+		        	<ul>
+		        		<li>Senior Consultant @ OPI</li>
+		        		<li>Email: <i><a href="mailto:nick.larson@objectpartners.com">nick.larson@objectpartners.com</a></i></li>
+		        		<li>Twitter: <i><a href="http://www.twitter.com/nllarson">nllarson</a></i></li>
+		        	</ul>
+		        </section>
+
+		        <section>
+		        	<section>
+		        		<h2>Why Worry About Testing??</h2>
+		        		<p class="fragment"><i>We needed people to run the tests!</i></p>
+		        	</section>
+		        	<section>
+		        		<h3>Easy To Run</h3>
+		        		<ul>
+		        			<li>No Setup - should run from checkout</li>
+		        			<li>1 Click **</li>
+		        		</ul>
+		        	</section>
+		        	<section>
+		        		<h3>Fast</h3>
+		        		<ul>
+	        				<li>Fast enough to easily run before a commit.</li>
+		        		</ul>
+		        	</section>
+		        	<section>
+		        		<h3>Repeatable</h3>
+		        		<ul>
+		        			<li>Known state before each test.</li>
+		        			<li>One test should not depend on another.</li>
+		        			<li>Cleanup if needed.</li>
+		        		</ul>
+		        	</section>
+		        	<section>
+		        		<h3>Portable</h3>
+		        		<ul>
+		        			<li>Any machine</li>
+		        			<li>Self Contained</li>
+		        		</ul>
+		        	</section>
+		        </section>
+		        <section>
+		        	<section>
+		        		<h2>Code To Be Tested...</h2>
+		        		<aside class="notes">Show Foo.java<br/>Show FooMgr.java</aside>
+		        	</section>
+		        </section>
+		        <section>
+		        	<h1>Unit vs Integration</h1>
+		        </section>
+		        <section>
+		        	<section>
+		        		<h2>Unit Testing</h2>
+		        		<p><strong>Wikipedia:</strong><i> A method by which individual units of source code, sets of one or more computer program modules together with associated control data, usage procedures, and operating procedures, are tested to determine if they are fit for use.</i></p>
+		        		<p class="fragment"><strong>Nick Larson:</strong> <i>Testing a single class, method, piece of code (Unit).  Without any real dependencies.</i></p>
+		        	</section>
+		        	<section>
+		        		<h2>Mocking</h2>
+		        		<ul>
+		        			<li>Alot of code does depend on external code.  (Manager, Service, DAO, etc)</li>
+		        			<li>Mocking / Stubbing allows us to specify what we want returned from these dependencies without worrying about how the dependency is configured, written, etc.</li>
+		        		</ul>
+		        	</section>
+		        	<section>
+		        		<h2>Mockito</h2>
+		        		<p><a href="http://code.google.com/p/mockito" class="roll">http://code.google.com/p/mockito/</a></p>
+		        		<img src="mockito.jpeg"/>
+		        		<p><i>Mockito offers a simple and intuitive approach: you ask questions about interactions after execution. Using mockito, you can verify what you want.</i></p>
+		        	</section>
+	        		<section>
+	        			<h2>Mockito Features</h2>
+	        			<ul>
+<li>Mocks concrete classes as well as interfaces</li>
+<li>Little annotation syntax sugar - <i>@Mock</i></li>
+<li>Verification errors are clean
+<li>Allows flexible verification in order (e.g: verify in order what you want, not every single interaction)</li>
+<li>Flexible verification or stubbing using argument matchers <i>(anyObject(), anyString() or refEq() for reflection-based equality matching)</i></li>
+	        			</ul>
+	        		</section>
+	        		<section>
+	        			<h3>Simple Examples</h3>
+	        			<p><pre><code>when(foo.bar(0)).thenReturn(99);</code></pre></p>
+	        			<p><pre><code>when(foo.bar(0)).thenReturn(99).thenReturn(77);</code></pre></p>
+	        			<p><pre><code>when(foo.bar(0)).thenThrow(new Exception());</code></pre></p>
+	        			<p><pre><code>when(foo.bar(anyInteger())).thenReturn(99);</code></pre></p>
+	        			<p><pre><code>when(foo.baz(any(User.class))).thenReturn(99);</code></pre></p>
+	        			<p><pre><code>verify(foo, times(3)).bat(anyString());</code></pre></p>
+	        			<p><pre><code>verify(foo, atLeastOnce()).bat(anyString());</code></pre></p>
+	        			<p><pre><code>verify(foo, atMost(3)).bat(anyString());</code></pre></p>
+	        			</ul>
+        			</section>
+	        		<section>
+	        			<h3>Not Such A Simple Example</h3>
+	        			<pre><code>
+when(foo.loadUser(anyString())).thenAnswer(new Answer<User>()
+{
+	public User answer(InvocationOnMock invocation) 
+		throws Throwable
+	{
+		User user = null;
+		String userId;
+
+		userId = (String) invocation.getArguments()[0];
+		
+		if (!userId.equals("abc123"))
+		{
+			user = new User();
+			user.setId(userId);
+			user.setName("Test User");
+		}
+
+		return user;
+	}
+});
+						</code></pre>
+						<aside class="notes">This allows some logic to be thrown into the stubs.  In this example we are wanting to only 'load' a user if the id is NOT == 'abc123'.</aside>
+	        		</section>
+	        		<section>
+	        			<h2>Let's Code....</h2>
+	        		</section>		        	
+		        </section>
+		        <section>
+		        	<section>
+		        		<h2>Integration Testing</h2>
+		        		<p><strong>Wikipedia:</strong><i>  Individual software modules are combined and tested as a group. It occurs after unit testing. Integration testing takes as its input modules that have been unit tested, groups them in larger aggregates</i></p>
+		        		<p class="fragment"><strong>Nick Larson:</strong> <i>Yeah, what they said!  ^^^^^^ </i></p>		        		
+		        	</section>
+		        	<section>
+		        		<h2>Integration Testing Pain Points</h2>
+		        			<ul>
+		        				<li>Spring Container</li>
+		        				<li>Database</li>
+		        				<li class="fragment"><strike>App Server</strike> (Functional Testing)
+		        			</ul>
+		        			<aside class="notes">
+		        				<ul>
+		        					<li>Spring has good testing support.  We make use of the AbstractTransactionalTestNGSpringContextTests</li>
+		        				<li>Functional Testing is a 3rd phase of testing that we haven't taken on.  The difficulties around functional testing include cross browser support.  Tools like selenium are close, but not perfect.  We all know the headache around testing in IE7, imagine having to write code to test actually do the testing on individual browsers.  And it can be tougher to verfiy data in the functional phase.  You can only really verify what is shown to you on the screen.</li>
+		        				</ul>
+	        				</aside>
+		        	</section>
+		        	<section>
+		        		<h2>H2</h2>
+		        		<p><a href="http://www.h2database.com/" class="roll">http://www.h2database.com/</a></p>
+		        		<img src="h2-logo.png"/>
+		        	</section>
+		        	<section>
+		        		<h2>H2</h2>
+		        		<ul>
+		        			<li>Very fast, open source, JDBC API</li>
+							<li>Embedded and server modes (In-memory databases)</li>
+							<li>Small footprint: around 1 MB jar file size</li>
+							<li>Build Datasets that live in your project.</li>
+		        		</ul>
+		        	</section>
+		        	<section>
+		        		<h2>More Code....</h2>
+		        	</section>
+		        </section>
+		        <section>
+		        	<h1>How Can We Make It Better?</h2>
+		        		<ul>
+		        			<li>Ant Target</li>
+		        			<li>Continuous Integration</li>
+		        		</ul>
+		        </section>
+		        <section>
+		        	<h1>Questions????</h1>
+		        </section>
+		        <section>
+		        	<h1>References</h1>
+		        	<ul>
+		        		<li>Mockito <a href="http://code.google.com/p/mockito" class="roll">http://code.google.com/p/mockito</a></li>
+		        		<li>H2 <a href="http://www.h2database.com/" class="roll">http://www.h2database.com</a></li>
+		        		<li>SpringSource - <a href="http://www.springsource.com" class="roll">http://www.springsource.com</a></li>
+		        		<li>Wikipedia - <a href="http://www.wikipedia.com" class="roll">http://www.wikipedia.com</a></li>
+		        		<li>reveal.js - <a href="https://github.com/hakimel/reveal.js" class="roll">https://github.com/hakimel/reveal.js</a></li>
+		        	</ul>
+		        </section>
+		    </div>
+		
+			<!-- The navigational controls UI -->
+			<aside class="controls">
+					<a class="left" href="#">&#x25C4;</a>
+					<a class="right" href="#">&#x25BA;</a>
+					<a class="up" href="#">&#x25B2;</a>
+					<a class="down" href="#">&#x25BC;</a>
+			</aside>
+
+			<!-- Displays presentation progress, max value changes via JS to reflect # of slides -->
+			<div class="progress"><span></span></div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+		<script src="lib/js/highlight.js"></script>
+		<script src="lib/js/classList.js"></script>
+		<script>
+			var query = {};
+
+			location.search.replace( /[A-Z0-9]+?=(\w*)/gi, function(a) {
+				query [a.split( '=' ).shift() ] = a.split( '=' ).pop();
+			});
+
+			Reveal.initialize({
+			    controls: true,  // Display controls in the bottom right corner
+			    progress: true,  // Display a presentation progress bar
+			    history: true,  // Push each slide change to the browser history
+			    autoSlide: 0,  // Number of milliseconds between automatically proceeding to the next slide, disabled when set to 0
+			   	rollingLinks: true,  // Apply a 3D roll to links on hover
+			    theme: 'neon', // default/neon/beige // UI style
+			    transition: 'concave' // default/cube/page/concave/linear(2d)  // Transition style
+			});
+			hljs.initHighlightingOnLoad();
+		</script>
+	</body>
 </html>
